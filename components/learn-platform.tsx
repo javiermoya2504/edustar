@@ -14,10 +14,12 @@ import {
   Compass,
   Heart,
   LayoutDashboard,
+  LogOut,
   Menu,
   PlayCircle,
   Search,
   Sparkles,
+  UserRound,
   Star,
   TrendingUp,
   Users,
@@ -47,6 +49,8 @@ const categories = [
 
 function Header({ onDashboard }: { onDashboard: () => void }) {
   const [open, setOpen] = useState(false)
+  const [exploreOpen, setExploreOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center gap-6 px-5 lg:px-8">
@@ -54,7 +58,10 @@ function Header({ onDashboard }: { onDashboard: () => void }) {
           <span className="flex size-9 items-center justify-center rounded-xl bg-slate-950 text-white shadow-lg shadow-slate-950/15"><Sparkles /></span>
           <span className="text-xl font-bold tracking-tight text-slate-950">nexo<span className="text-rose-500">.</span></span>
         </Link>
-        <button className="hidden items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950 lg:flex"><Menu data-icon="inline-start" /> Explorar <ChevronDown data-icon="inline-end" /></button>
+        <div className="relative hidden lg:block">
+          <button onClick={() => setExploreOpen(!exploreOpen)} aria-expanded={exploreOpen} className="flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"><Menu data-icon="inline-start" /> Explorar <ChevronDown data-icon="inline-end" /></button>
+          {exploreOpen && <div className="absolute left-0 top-12 z-50 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"><a href="#cursos" onClick={() => setExploreOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-slate-50">Todos los cursos</a>{categories.map(({ name }) => <a key={name} href="#cursos" onClick={() => setExploreOpen(false)} className="block rounded-lg px-3 py-2 text-sm hover:bg-slate-50">{name}</a>)}</div>}
+        </div>
         <div className="relative hidden max-w-md flex-1 md:block">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input className="h-11 rounded-xl border-slate-200 bg-slate-50 pl-10" placeholder="¿Qué quieres aprender hoy?" />
@@ -63,7 +70,10 @@ function Header({ onDashboard }: { onDashboard: () => void }) {
           <a href="#cursos" className="transition hover:text-slate-950">Cursos</a>
           <button onClick={onDashboard} className="transition hover:text-slate-950">Mi aprendizaje</button>
           <button aria-label="Notificaciones" className="text-slate-500 hover:text-slate-950"><Bell /></button>
-          <Avatar className="size-9"><AvatarImage src="https://i.pravatar.cc/100?img=47" alt="Perfil de Alex" /><AvatarFallback>AR</AvatarFallback></Avatar>
+          <div className="relative">
+            <button onClick={() => setProfileOpen(!profileOpen)} aria-label="Abrir menú de perfil" aria-expanded={profileOpen} className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"><Avatar className="size-9"><AvatarImage src="https://i.pravatar.cc/100?img=47" alt="Perfil de Alex" /><AvatarFallback>AR</AvatarFallback></Avatar></button>
+            {profileOpen && <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"><button onClick={() => setProfileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"><UserRound /> Mi perfil</button><button onClick={() => setProfileOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50"><LogOut /> Cerrar sesión</button></div>}
+          </div>
         </nav>
         <button className="ml-auto lg:hidden" onClick={() => setOpen(!open)} aria-label="Abrir menú">{open ? <X /> : <Menu />}</button>
       </div>
@@ -73,11 +83,12 @@ function Header({ onDashboard }: { onDashboard: () => void }) {
 }
 
 function CourseCard({ course }: { course: typeof courses[number] }) {
+  const [saved, setSaved] = useState(false)
   return <Card className="group overflow-hidden rounded-2xl border-slate-200/80 py-0 shadow-none transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-xl hover:shadow-slate-200/50">
     <Link href={`/curso/${course.id}`} className="relative block aspect-[16/9] overflow-hidden">
       <img src={course.image} alt={course.title} className="size-full object-cover transition duration-500 group-hover:scale-105" />
       <Badge className={`absolute left-3 top-3 border-0 ${course.color}`}>{course.tag}</Badge>
-      <button aria-label="Guardar curso" className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/90 text-slate-600 backdrop-blur transition hover:text-rose-500"><Heart /></button>
+      <button aria-label={saved ? 'Quitar de favoritos' : 'Guardar curso'} aria-pressed={saved} onClick={(event) => { event.preventDefault(); event.stopPropagation(); setSaved(!saved) }} className={`absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/90 backdrop-blur transition ${saved ? 'text-rose-500' : 'text-slate-600 hover:text-rose-500'}`}><Heart className={saved ? 'fill-current' : ''} /></button>
     </Link>
     <CardHeader className="gap-2 px-4 pb-1 pt-4"><CardTitle className="line-clamp-2 text-[15px] leading-5 text-slate-900"><Link href={`/curso/${course.id}`}>{course.title}</Link></CardTitle><p className="text-xs text-slate-500">{course.instructor}</p></CardHeader>
     <CardContent className="px-4 py-2"><div className="flex items-center gap-1 text-sm"><span className="font-bold text-amber-500">{course.rating}</span><span className="flex text-amber-400">★★★★★</span><span className="text-xs text-slate-400">({course.reviews})</span></div></CardContent>
